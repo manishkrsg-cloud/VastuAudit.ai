@@ -1,0 +1,65 @@
+# --- secrets & env ---
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+*.log
+
+# --- node / next ---
+node_modules/
+.next/
+out/
+.turbo/
+.pnpm-store/
+*.tsbuildinfo
+.vercel/
+
+# --- alembic local artifacts ---
+# (we DO commit migrations under apps/api/alembic/versions/)
+
+# --- ide & os ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# --- icloud sync junk ---
+.iCloud
+*.icloud
+
+# --- local data / uploads ---
+/data/
+/uploads/
+*.sqlite
+*.sqlite3
+*.db
+
+# --- docker volumes ---
+.docker/
+postgres-data/
+redis-data/

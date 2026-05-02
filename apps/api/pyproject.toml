@@ -1,0 +1,112 @@
+[project]
+name = "vastuaudit-api"
+version = "0.1.0"
+description = "VastuAudit.ai backend — AI-powered Vastu audit reports. A Qadr AI Agency Dubai product."
+authors = [{ name = "Manish Kumar", email = "manish@qadr.ai" }]
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = { text = "Proprietary" }
+
+dependencies = [
+    # web framework
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",          # file uploads
+
+    # config & validation
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.6.0",
+
+    # database
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+    "pgvector>=0.3.6",                   # used from sprint 2 onward
+
+    # cache / queue
+    "redis[hiredis]>=5.2.0",
+
+    # auth (clerk webhooks use svix signatures)
+    "svix>=1.40.0",
+
+    # outbound HTTP
+    "httpx>=0.28.0",
+
+    # storage (Cloudflare R2 is S3-compatible)
+    "boto3>=1.35.0",
+
+    # AI
+    "anthropic>=0.40.0",
+
+    # payments
+    "stripe>=11.4.0",
+
+    # PDF / templating
+    "weasyprint>=63.0",
+    "jinja2>=3.1.4",
+
+    # misc
+    "python-dateutil>=2.9.0",
+    "pyyaml>=6.0.2",                     # load knowledge/rules/*.yaml
+    "structlog>=24.4.0",
+    "orjson>=3.10.7",
+    "tenacity>=9.0.0",                   # retry decorator for AI calls
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "httpx>=0.28.0",                     # TestClient
+    "ruff>=0.8.0",
+    "black>=24.10.0",
+    "mypy>=1.13.0",
+    "types-python-dateutil",
+    "types-pyyaml",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+# ---------------------------------------------------------------------------
+# Tool configuration
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "ASYNC", "S", "N", "RUF"]
+ignore = [
+    "S101",   # allow `assert` (used in tests)
+    "B008",   # allow `Depends()` in default args (FastAPI idiom)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S", "N"]
+"alembic/**/*.py" = ["E501"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["alembic/versions/"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --cov=src/core --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["src/main.py", "alembic/*", "tests/*"]
