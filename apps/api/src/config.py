@@ -56,7 +56,9 @@ class Settings(BaseSettings):
     resend_from_email: str = "hello@vastuaudit.ai"
 
     # ----- web / CORS ----------------------------------------------------
-    cors_origins: str = "http://localhost:3000,https://vastuaudit.ai"
+    cors_origins: str = (
+        "http://localhost:3000,https://vastuaudit.ai,https://www.vastuaudit.ai"
+    )
 
     # ----- observability -------------------------------------------------
     sentry_dsn: str = ""

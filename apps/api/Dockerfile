@@ -74,4 +74,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD curl -fsS http://localhost:${PORT:-8000}/api/v1/health || exit 1
 
 # Railway injects $PORT. Default to 8000 locally.
-CMD ["sh", "-c", "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]
+# DB migrations run as the api service's preDeployCommand (see railway.json).
+# The worker service uses the same image but overrides startCommand in Railway:
+#     python -m src.workers.rq_worker
+CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]
