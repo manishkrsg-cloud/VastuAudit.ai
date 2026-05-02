@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VastuAudit.ai — Live Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Surface */
+  --color-bg-base: #0A0E1A;
+  --color-bg-elevated: #11172A;
+  --color-bg-card: #1A2138;
+  --color-bg-overlay: rgba(10, 14, 26, 0.85);
+  --color-border-subtle: #2A3148;
+  --color-border-strong: #3B4566;
+  /* Text */
+  --color-text-primary: #F5F1E8;
+  --color-text-secondary: #B8B0A0;
+  --color-text-muted: #6E6A60;
+  --color-text-inverse: #0A0E1A;
+  /* Brand */
+  --color-gold-primary: #D4A857;
+  --color-gold-soft: #E8C988;
+  --color-gold-deep: #A8843E;
+  --color-sand-base: #C9B89A;
+  --color-sand-deep: #8B7A5C;
+  /* Severity (4-tier) */
+  --color-severity-1: #4ADE80;
+  --color-severity-2: #FACC15;
+  --color-severity-3: #FB923C;
+  --color-severity-4: #EF4444;
+  /* Confidence */
+  --color-confidence-high: rgba(74, 222, 128, 0.9);
+  --color-confidence-mid: rgba(212, 168, 87, 0.9);
+  --color-confidence-low: rgba(251, 146, 60, 0.9);
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+  /* Shadow */
+  --shadow-glow-gold: 0 0 24px rgba(212, 168, 87, 0.15);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 12px 48px rgba(0, 0, 0, 0.6);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.fraunces { font-family: 'Fraunces', serif; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+.sanskrit { font-family: 'Tiro Devanagari Hindi', serif; }
+
+/* Top nav */
+.top-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10, 14, 26, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: 16px 32px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px;
+}
+.brand-logo {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--color-gold-primary), var(--color-gold-deep));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif; color: var(--color-text-inverse); font-weight: 700;
+}
+.brand-name span { color: var(--color-gold-primary); }
+.screen-tabs { display: flex; gap: 4px; background: var(--color-bg-card); padding: 4px; border-radius: var(--radius-md); }
+.screen-tab {
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  background: transparent; color: var(--color-text-secondary);
+  border: none; cursor: pointer; font-size: 13px; font-weight: 500;
+  transition: all 280ms cubic-bezier(0.32, 0.72, 0.24, 1.0);
+}
+.screen-tab:hover { color: var(--color-text-primary); }
+.screen-tab.active {
+  background: var(--color-gold-primary); color: var(--color-text-inverse); font-weight: 600;
+}
+.user-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 999px;
+  font-size: 12px;
+}
+.user-avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--color-gold-primary), var(--color-sand-base)); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--color-text-inverse); font-size: 11px; }
+
+.screen { display: none; min-height: calc(100vh - 65px); padding: 32px; }
+.screen.active { display: block; }
+
+/* === SCREEN 1: WIZARD === */
+.wizard-container {
+  max-width: 1280px; margin: 0 auto;
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px;
+}
+.wizard-header {
+  grid-column: 1 / -1;
+  margin-bottom: 8px;
+}
+.wizard-title {
+  font-family: 'Fraunces', serif; font-size: 40px; font-weight: 500; line-height: 1.2;
+  margin-bottom: 8px;
+}
+.wizard-title .gold { color: var(--color-gold-primary); }
+.wizard-subtitle { color: var(--color-text-secondary); font-size: 16px; }
+
+.upload-card, .form-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+.upload-zone {
+  margin-top: 16px;
+  border: 2px dashed var(--color-border-strong);
+  border-radius: 50%;
+  width: 280px; height: 280px;
+  margin-left: auto; margin-right: auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative;
+  cursor: pointer;
+  transition: all 280ms ease;
+  background: radial-gradient(circle, var(--color-bg-elevated) 0%, var(--color-bg-card) 70%);
+}
+.upload-zone:hover {
+  border-color: var(--color-gold-primary);
+  box-shadow: var(--shadow-glow-gold);
+}
+.upload-zone::before {
+  content: ''; position: absolute; inset: -8px;
+  border: 1px solid var(--color-gold-deep); opacity: 0.3;
+  border-radius: 50%;
+  animation: pulse 3s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.02); }
+}
+.compass-icon-large { color: var(--color-gold-primary); margin-bottom: 12px; }
+.upload-zone-text { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500; color: var(--color-gold-primary); margin-bottom: 4px; }
+.upload-zone-hint { font-size: 12px; color: var(--color-text-muted); }
+
+.form-row { margin-bottom: 18px; }
+.form-label {
+  display: block; font-size: 12px; font-weight: 500;
+  color: var(--color-text-secondary); margin-bottom: 6px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.form-input, .form-select {
+  width: 100%; padding: 11px 14px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-family: 'Inter', sans-serif; font-size: 14px;
+  outline: none; transition: border-color 280ms ease;
+}
+.form-input:focus, .form-select:focus {
+  border-color: var(--color-gold-primary);
+  box-shadow: 0 0 0 3px rgba(212, 168, 87, 0.15);
+}
+.tradition-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.tradition-pill {
+  padding: 9px; text-align: center; font-size: 11px;
+  background: var(--color-bg-elevated); border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md); cursor: pointer; transition: all 280ms ease;
+  color: var(--color-text-secondary);
+}
+.tradition-pill.active {
+  background: var(--color-gold-primary); color: var(--color-text-inverse);
+  border-color: var(--color-gold-primary); font-weight: 600;
+}
+.tradition-pill:hover:not(.active) { color: var(--color-text-primary); border-color: var(--color-border-strong); }
+
+.compass-overlay-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+  display: flex; flex-direction: column;
+}
+.compass-overlay-area {
+  flex: 1;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; min-height: 360px;
+  background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.floor-plan-mock {
+  width: 280px; height: 220px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  position: relative;
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  gap: 2px; padding: 4px;
+}
+.fp-room {
+  background: rgba(255,255,255,0.03); border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; color: var(--color-text-muted); letter-spacing: 0.05em;
+}
+.compass-svg-wrap {
+  position: absolute; pointer-events: none;
+  width: 320px; height: 320px;
+  display: flex; align-items: center; justify-content: center;
+  animation: spin-slow 60s linear infinite;
+}
+@keyframes spin-slow { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
+.calibrate-readout {
+  margin-top: 12px; text-align: center;
+  font-size: 12px; color: var(--color-text-muted);
+}
+.calibrate-readout span { color: var(--color-gold-primary); font-weight: 600; }
+
+.btn-primary {
+  background: var(--color-gold-primary);
+  color: var(--color-text-inverse);
+  font-weight: 600; font-size: 14px;
+  padding: 12px 24px;
+  border: none; border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 280ms cubic-bezier(0.32, 0.72, 0.24, 1.0);
+}
+.btn-primary:hover { background: var(--color-gold-soft); box-shadow: var(--shadow-glow-gold); }
+.btn-secondary {
+  background: transparent; color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+  padding: 12px 24px; border-radius: var(--radius-md);
+  font-weight: 500; font-size: 14px; cursor: pointer;
+}
+.btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+/* === SCREEN 2: PROCESSING === */
+.processing-container {
+  max-width: 720px; margin: 40px auto; text-align: center;
+}
+.processing-title {
+  font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500;
+  margin-bottom: 8px;
+}
+.processing-subtitle { color: var(--color-text-secondary); margin-bottom: 32px; }
+.scan-area {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-elevated);
+}
+.scan-floor-plan {
+  width: 100%; max-width: 480px; height: 280px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  margin: 0 auto;
+  position: relative;
+  display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr;
+  gap: 2px; padding: 4px;
+}
+.scan-floor-plan::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(74, 222, 128, 0.3), transparent);
+  animation: scan 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes scan {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+.scan-floor-plan .fp-room { font-size: 10px; }
+.scan-pill {
+  display: inline-block;
+  background: rgba(74, 222, 128, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  color: var(--color-severity-1);
+  padding: 6px 14px; border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  margin-top: 20px;
+}
+.scan-pill::before { content: '● '; animation: blink 1s steps(2, end) infinite; }
+@keyframes blink { 50% { opacity: 0.3; } }
+
+.terminal-log {
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-top: 24px;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  line-height: 1.8;
+  min-height: 180px;
+}
+.log-line { color: var(--color-text-secondary); margin-bottom: 4px; }
+.log-line.complete { color: var(--color-severity-1); }
+.log-line.active { color: var(--color-gold-primary); }
+.log-line .progress {
+  display: inline-block; width: 100px;
+  background: var(--color-bg-card); height: 6px;
+  border-radius: 3px; overflow: hidden; vertical-align: middle; margin: 0 8px;
+}
+.log-line .progress-fill {
+  background: linear-gradient(90deg, var(--color-gold-deep), var(--color-gold-primary));
+  height: 100%; transition: width 600ms ease;
+}
+.reasoning-stream {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(212, 168, 87, 0.08);
+  border-left: 2px solid var(--color-gold-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--color-text-secondary);
+  font-size: 12px; font-style: italic;
+}
+.reasoning-stream::before { content: '💭 '; font-style: normal; }
+.powered-by { margin-top: 32px; color: var(--color-text-muted); font-size: 12px; }
+.powered-by .gold { color: var(--color-gold-primary); }
+
+/* === SCREEN 3: REPORT === */
+.report-container { max-width: 1440px; margin: 0 auto; }
+.report-topbar {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 20px 28px;
+  display: grid; grid-template-columns: auto 1fr auto auto;
+  gap: 24px; align-items: center;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-card);
+}
+.score-gauge-wrap { display: flex; align-items: center; gap: 16px; }
+.score-gauge-svg { width: 96px; height: 96px; }
+.score-text-block { display: flex; flex-direction: column; }
+.score-number {
+  font-family: 'Fraunces', serif; font-weight: 600;
+  font-size: 36px; line-height: 1; color: var(--color-text-primary);
+}
+.score-number .total { color: var(--color-text-muted); font-size: 18px; font-weight: 500; }
+.score-secondary { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; letter-spacing: 0.05em; }
+.score-verdict {
+  font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500;
+  color: var(--color-gold-primary);
+  margin-top: 6px;
+}
+.report-actions { display: flex; gap: 8px; }
+.tradition-toggle {
+  display: flex; gap: 4px; background: var(--color-bg-elevated); padding: 4px;
+  border-radius: var(--radius-md); border: 1px solid var(--color-border-subtle);
+}
+.tradition-toggle button {
+  padding: 7px 12px; border: none; background: transparent;
+  color: var(--color-text-secondary); cursor: pointer;
+  border-radius: var(--radius-sm); font-size: 12px; font-weight: 500;
+}
+.tradition-toggle button.active { background: var(--color-gold-primary); color: var(--color-text-inverse); }
+
+.report-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr 320px;
+  gap: 24px;
+}
+
+.zones-list { background: var(--color-bg-card); border-radius: var(--radius-xl); padding: 16px; border: 1px solid var(--color-border-subtle); height: fit-content; }
+.zones-list-title { font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; padding: 0 6px; }
+.zone-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-radius: var(--radius-md);
+  cursor: pointer; transition: background 280ms ease;
+  margin-bottom: 2px;
+}
+.zone-item:hover { background: var(--color-bg-elevated); }
+.zone-item.active { background: var(--color-bg-elevated); border: 1px solid var(--color-gold-deep); }
+.zone-item-name { font-weight: 500; font-size: 13px; }
+.zone-item-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--color-text-muted); }
+.severity-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+}
+.severity-dot.s1 { background: var(--color-severity-1); }
+.severity-dot.s2 { background: var(--color-severity-2); }
+.severity-dot.s3 { background: var(--color-severity-3); box-shadow: 0 0 8px rgba(251, 146, 60, 0.4); }
+.severity-dot.s4 { background: var(--color-severity-4); box-shadow: 0 0 12px rgba(239, 68, 68, 0.5); }
+
+.heatmap-card { background: var(--color-bg-card); border-radius: var(--radius-xl); padding: 24px; border: 1px solid var(--color-border-subtle); position: relative; }
+.heatmap-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.heatmap-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; }
+.heatmap-toggles { display: flex; gap: 4px; }
+.heatmap-toggle-btn {
+  padding: 6px 10px; font-size: 11px; background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm);
+  color: var(--color-text-secondary); cursor: pointer;
+}
+.heatmap-toggle-btn.active { color: var(--color-gold-primary); border-color: var(--color-gold-deep); }
+.heatmap-grid {
+  display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr);
+  gap: 2px; aspect-ratio: 1; max-width: 540px; margin: 0 auto;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md); padding: 4px;
+}
+.cell {
+  background: rgba(74, 222, 128, 0.18);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 280ms ease;
+  position: relative;
+}
+.cell:hover { box-shadow: 0 0 0 2px var(--color-gold-primary); z-index: 2; }
+.cell.s2 { background: rgba(250, 204, 21, 0.22); }
+.cell.s3 { background: rgba(251, 146, 60, 0.28); }
+.cell.s4 { background: rgba(239, 68, 68, 0.35); }
+.cell.brahma { background: rgba(212, 168, 87, 0.4); border: 1px solid var(--color-gold-primary); }
+.cell.selected { box-shadow: 0 0 0 3px var(--color-gold-primary); z-index: 3; }
+.heatmap-legend { display: flex; gap: 14px; margin-top: 16px; justify-content: center; font-size: 11px; }
+.legend-item { display: flex; align-items: center; gap: 6px; color: var(--color-text-secondary); }
+
+.detail-panel {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  height: fit-content;
+}
+.detail-zone-name { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.detail-zone-sanskrit { font-family: 'Tiro Devanagari Hindi', serif; color: var(--color-gold-primary); font-size: 14px; margin-bottom: 12px; }
+.detail-section { margin-top: 16px; }
+.detail-section-label { font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.severity-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+}
+.severity-badge.s3 { background: rgba(251, 146, 60, 0.18); color: var(--color-severity-3); border: 1px solid rgba(251, 146, 60, 0.3); }
+.confidence-row { display: flex; align-items: center; gap: 10px; }
+.confidence-bar { flex: 1; height: 6px; background: var(--color-bg-elevated); border-radius: 3px; overflow: hidden; }
+.confidence-fill { height: 100%; width: 87%; background: linear-gradient(90deg, var(--color-gold-deep), var(--color-gold-primary)); }
+.confidence-label { font-size: 11px; font-weight: 600; color: var(--color-gold-primary); }
+.principle-tag { display: inline-block; padding: 3px 8px; background: var(--color-bg-elevated); border: 1px solid var(--color-border-subtle); border-radius: 999px; font-size: 10px; color: var(--color-text-secondary); margin-right: 4px; margin-bottom: 4px; }
+
+.remedy-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.remedy-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.remedy-title { font-weight: 600; font-size: 13px; }
+.remedy-cost { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--color-gold-primary); font-weight: 600; }
+.remedy-desc { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px; }
+.remedy-cta {
+  background: transparent; border: 1px solid var(--color-gold-deep);
+  color: var(--color-gold-primary); font-size: 11px; font-weight: 600;
+  padding: 5px 10px; border-radius: var(--radius-sm); cursor: pointer;
+}
+.remedy-cta:hover { background: var(--color-gold-primary); color: var(--color-text-inverse); }
+
+/* === SCREEN 4: BRANDING === */
+.branding-container { max-width: 1280px; margin: 0 auto; }
+.branding-title { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; margin-bottom: 4px; }
+.branding-subtitle { color: var(--color-text-secondary); margin-bottom: 24px; }
+.tier-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(212, 168, 87, 0.15); color: var(--color-gold-primary);
+  border: 1px solid var(--color-gold-deep); font-size: 11px; font-weight: 600;
+  margin-left: 10px;
+}
+.branding-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.branding-form-card, .branding-preview-card {
+  background: var(--color-bg-card); border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl); padding: 28px;
+}
+.color-swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.swatch {
+  aspect-ratio: 1; border-radius: var(--radius-md);
+  cursor: pointer; transition: transform 280ms ease;
+  position: relative;
+}
+.swatch:hover { transform: scale(1.05); }
+.swatch.selected::after {
+  content: '✓'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 16px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--color-border-subtle); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-switch {
+  width: 36px; height: 20px; background: var(--color-bg-elevated);
+  border-radius: 999px; position: relative; cursor: pointer;
+  border: 1px solid var(--color-border-subtle);
+}
+.toggle-switch::after {
+  content: ''; position: absolute; left: 2px; top: 2px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--color-text-secondary);
+  transition: all 280ms ease;
+}
+.toggle-switch.on { background: var(--color-gold-primary); border-color: var(--color-gold-primary); }
+.toggle-switch.on::after { left: 18px; background: var(--color-text-inverse); }
+.preview-pdf {
+  background: white; color: #1a1a1a;
+  border-radius: var(--radius-md);
+  padding: 24px; margin-top: 14px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: var(--shadow-elevated);
+  aspect-ratio: 1 / 1.4;
+}
+.preview-pdf-header {
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 2px solid var(--color-gold-primary); padding-bottom: 12px;
+}
+.preview-pdf-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Fraunces', serif; font-weight: 600; color: #1a1a1a;
+}
+.preview-pdf-logo .lg { width: 28px; height: 28px; background: var(--color-gold-primary); border-radius: 6px; }
+.preview-pdf-meta { font-size: 10px; color: #666; }
+.preview-pdf-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin: 16px 0 8px; }
+.preview-pdf-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11px; color: #555; }
+
+footer { padding: 24px 32px; border-top: 1px solid var(--color-border-subtle); margin-top: 48px; text-align: center; color: var(--color-text-muted); font-size: 12px; }
+footer .gold { color: var(--color-gold-primary); }
+
+/* Disclaimer banner */
+.disclaimer {
+  background: rgba(212, 168, 87, 0.08);
+  border-bottom: 1px solid var(--color-gold-deep);
+  padding: 8px 32px; text-align: center;
+  font-size: 12px; color: var(--color-text-secondary);
+}
+.disclaimer .gold { color: var(--color-gold-primary); font-weight: 600; }
+
+@media (max-width: 1100px) {
+  .wizard-container, .branding-grid { grid-template-columns: 1fr; }
+  .report-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="disclaimer">
+  <span class="gold">PROTOTYPE</span> — Live HTML preview of VastuAudit.ai design system v1.0. Not connected to backend. Use to validate UX before frontend dev.
+</div>
+
+<nav class="top-nav">
+  <div class="brand">
+    <div class="brand-logo">V</div>
+    <div class="brand-name">VastuAudit<span>.ai</span></div>
+  </div>
+  <div class="screen-tabs">
+    <button class="screen-tab active" data-screen="wizard">1. Wizard</button>
+    <button class="screen-tab" data-screen="processing">2. Processing</button>
+    <button class="screen-tab" data-screen="report">3. Audit Report</button>
+    <button class="screen-tab" data-screen="branding">4. Consultant</button>
+  </div>
+  <div class="user-pill">
+    <div class="user-avatar">M</div>
+    <span>Manish K.</span>
+  </div>
+</nav>
+
+<!-- ===== SCREEN 1: WIZARD ===== -->
+<section class="screen active" id="screen-wizard">
+  <div class="wizard-container">
+    <div class="wizard-header">
+      <h1 class="wizard-title">Audit any property in <span class="gold">60 seconds</span>.</h1>
+      <p class="wizard-subtitle">Upload your floor plan. Calibrate North. Get a consultant-grade Vastu report.</p>
+    </div>
+
+    <div class="upload-card">
+      <h3 style="font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:6px;">Step 1 — Upload Plan</h3>
+      <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:8px;">PDF, JPG, or PNG up to 10MB.</p>
+
+      <div class="upload-zone">
+        <svg class="compass-icon-large" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/>
+          <polygon points="12,4 14,12 12,20 10,12" fill="currentColor"/>
+          <text x="12" y="3.5" text-anchor="middle" font-size="3" fill="currentColor" stroke="none">N</text>
+        </svg>
+        <div class="upload-zone-text">Drop floor plan</div>
+        <div class="upload-zone-hint">or click to browse</div>
+      </div>
+
+      <h3 style="font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-top:24px;margin-bottom:12px;">Step 2 — Property Details</h3>
+      <div class="form-row">
+        <label class="form-label">Property Type</label>
+        <select class="form-select">
+          <option>Villa</option><option>Apartment</option><option>Plot</option><option>Office</option><option>Retail</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Facing Direction (auto-set from compass)</label>
+        <input class="form-input" value="North-East · 47°" />
+      </div>
+      <div class="form-row">
+        <label class="form-label">Tradition</label>
+        <div class="tradition-row">
+          <div class="tradition-pill active">North Indian</div>
+          <div class="tradition-pill">South Indian</div>
+          <div class="tradition-pill">Islamic</div>
+          <div class="tradition-pill">Feng Shui</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compass-overlay-card">
+      <h3 style="font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:6px;">Calibrate North</h3>
+      <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:14px;">Drag the compass rose to align with the actual North in your plan.</p>
+
+      <div class="compass-overlay-area">
+        <div class="floor-plan-mock">
+          <div class="fp-room">LIVING</div>
+          <div class="fp-room">KITCHEN</div>
+          <div class="fp-room">BEDROOM</div>
+          <div class="fp-room">BATH</div>
+        </div>
+        <div class="compass-svg-wrap">
+          <svg width="240" height="240" viewBox="0 0 240 240">
+            <defs>
+              <linearGradient id="cg" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#E8C988"/>
+                <stop offset="100%" stop-color="#A8843E"/>
+              </linearGradient>
+            </defs>
+            <circle cx="120" cy="120" r="110" fill="none" stroke="rgba(212,168,87,0.3)" stroke-width="1" stroke-dasharray="2,4"/>
+            <circle cx="120" cy="120" r="70" fill="none" stroke="rgba(212,168,87,0.5)" stroke-width="1"/>
+            <polygon points="120,30 132,120 120,210 108,120" fill="url(#cg)" opacity="0.85"/>
+            <polygon points="30,120 120,108 210,120 120,132" fill="url(#cg)" opacity="0.5"/>
+            <circle cx="120" cy="120" r="6" fill="#D4A857"/>
+            <text x="120" y="22" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" fill="#D4A857">N</text>
+            <text x="120" y="228" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" fill="#B8B0A0">S</text>
+            <text x="222" y="125" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" fill="#B8B0A0">E</text>
+            <text x="18" y="125" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" fill="#B8B0A0">W</text>
+          </svg>
+        </div>
+      </div>
+      <div class="calibrate-readout">
+        North aligned at <span>47°</span> · Snap interval: 15° · <kbd>Shift</kbd> for 1° steps
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary">Save draft</button>
+        <button class="btn-primary" onclick="switchScreen('processing')">Run Audit →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SCREEN 2: PROCESSING ===== -->
+<section class="screen" id="screen-processing">
+  <div class="processing-container">
+    <h1 class="processing-title">Analyzing your property...</h1>
+    <p class="processing-subtitle">Powered by Claude Vision + Reasoning. Typically completes in under 60 seconds.</p>
+
+    <div class="scan-area">
+      <div class="scan-floor-plan">
+        <div class="fp-room">LIV</div><div class="fp-room">KIT</div><div class="fp-room">BED 1</div>
+        <div class="fp-room">DINE</div><div class="fp-room">BATH</div><div class="fp-room">BED 2</div>
+      </div>
+      <div class="scan-pill">CLAUDE VISION · DETECTING ZONES</div>
+
+      <div class="terminal-log" id="termLog">
+        <div class="log-line complete">[████] LOADING ARCHITECTURE <span class="progress"><span class="progress-fill" style="width:100%"></span></span> done · 1.2s</div>
+        <div class="log-line complete">[████] CALIBRATING COMPASS <span class="progress"><span class="progress-fill" style="width:100%"></span></span> done · 0.8s</div>
+        <div class="log-line active">[██░░] ANALYZING ZONES <span class="progress"><span class="progress-fill" style="width:48%"></span></span> 48% · estimating...</div>
+        <div class="log-line">[░░░░] IDENTIFYING DOSHAS</div>
+        <div class="log-line">[░░░░] GENERATING REMEDIES</div>
+        <div class="log-line">[░░░░] FINALIZING SCORE</div>
+
+        <div class="reasoning-stream">South-east quadrant aligned with Agni element — kitchen placement is optimal. Analyzing south-west quadrant for stability indicators...</div>
+      </div>
+    </div>
+    <div style="margin-top:20px;">
+      <button class="btn-primary" onclick="switchScreen('report')">View completed report →</button>
+    </div>
+    <p class="powered-by">Powered by <span class="gold">Qadr AI Agency Dubai</span></p>
+  </div>
+</section>
+
+<!-- ===== SCREEN 3: REPORT ===== -->
+<section class="screen" id="screen-report">
+  <div class="report-container">
+    <div class="report-topbar">
+      <div class="score-gauge-wrap">
+        <svg class="score-gauge-svg" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--color-bg-elevated)" stroke-width="9"/>
+          <circle cx="50" cy="50" r="42" fill="none" stroke="url(#scoreG)" stroke-width="9" stroke-dasharray="190 264" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+          <defs>
+            <linearGradient id="scoreG"><stop offset="0%" stop-color="#FB923C"/><stop offset="100%" stop-color="#D4A857"/></linearGradient>
+          </defs>
+          <text x="50" y="56" text-anchor="middle" font-family="Fraunces" font-weight="600" font-size="20" fill="#F5F1E8">72</text>
+        </svg>
+        <div class="score-text-block">
+          <div class="score-number">72<span class="total">/100</span></div>
+          <div class="score-secondary">Equivalent to 7.2/10</div>
+          <div class="score-verdict">Auspicious</div>
+        </div>
+      </div>
+      <div></div>
+      <div class="tradition-toggle">
+        <button class="active">North Indian</button>
+        <button>South Indian</button>
+        <button>Islamic</button>
+        <button>Feng Shui</button>
+      </div>
+      <div class="report-actions">
+        <button class="btn-secondary">Share</button>
+        <button class="btn-primary">Download PDF</button>
+      </div>
+    </div>
+
+    <div class="report-grid">
+      <!-- Zone list -->
+      <div class="zones-list">
+        <div class="zones-list-title">Zones · 9</div>
+        <div class="zone-item">
+          <div>
+            <div class="zone-item-name">North</div>
+            <div class="zone-item-meta">Kubera · Wealth</div>
+          </div>
+          <span class="severity-dot s1"></span>
+        </div>
+        <div class="zone-item">
+          <div>
+            <div class="zone-item-name">North-East</div>
+            <div class="zone-item-meta">Ishana · Spirit</div>
+          </div>
+          <span class="severity-dot s1"></span>
+        </div>
+        <div class="zone-item">
+          <div>
+            <div class="zone-item-name">East</div>
+            <div class="zone-item-meta">Indra · Health</div>
+          </div>
+          <span class="severity-dot s2"></span>
+        </div>
+        <div class="zone-item">
+          <div>
+            <div class="zone-item-name">South-East</div>
+            <div class="zone-item-meta">Agni · Fire</div>
+          </div>
+          <span class="severity-dot s2"></span>
+        </div>
+        <div class="zone-item">
+          <div>
+            <div class="zone-item-name">South</div>
+            <div class="zone-item-meta">Yama · Stability</div>
+          </div>
+          <span class="severity-dot s3"></span>
+        </div>
+        <div class="zone-item active">
+          <div>
+            <div class="zone-item-name" style="color:var(--color-gold-primary);">South-West</div>
+            <div class="zone-item-meta">Nairutya · Roots</div>
+          </div>
+          <span class="severity-dot s4"></span>
+        </div>
+        <div class="zone-item">
+          <div>
+            <div class="zone-item-name">West</div>
+            <div class="zone-item-meta">Varuna · Water</div>
+          </div>
+          <span class="severity-dot s1"></span>
+        </div>
+        <div class="zone-item">
+          <div>
+            <div class="zone-item-name">North-West</div>
+            <div class="zone-item-meta">Vayu · Air</div>
+          </div>
+          <span class="severity-dot s2"></span>
+        </div>
+        <div class="zone-item">
+          <div>
+            <div class="zone-item-name">Brahmasthan</div>
+            <div class="zone-item-meta">Center · Energy</div>
+          </div>
+          <span class="severity-dot s3"></span>
+        </div>
+      </div>
+
+      <!-- Heatmap -->
+      <div class="heatmap-card">
+        <div class="heatmap-card-header">
+          <h3 class="heatmap-title">Mandala Heatmap <span class="sanskrit" style="color:var(--color-gold-primary);font-size:14px;margin-left:6px;">वास्तु मण्डल</span></h3>
+          <div class="heatmap-toggles">
+            <button class="heatmap-toggle-btn active">9×9</button>
+            <button class="heatmap-toggle-btn">16-Pada</button>
+          </div>
+        </div>
+        <div class="heatmap-grid" id="heatmap"></div>
+        <div class="heatmap-legend">
+          <span class="legend-item"><span class="severity-dot s1"></span> Mild</span>
+          <span class="legend-item"><span class="severity-dot s2"></span> Moderate</span>
+          <span class="legend-item"><span class="severity-dot s3"></span> Significant</span>
+          <span class="legend-item"><span class="severity-dot s4"></span> Severe</span>
+        </div>
+      </div>
+
+      <!-- Detail panel -->
+      <div class="detail-panel">
+        <div class="detail-zone-name">South-West Zone</div>
+        <div class="detail-zone-sanskrit">नैऋत्य</div>
+
+        <div class="detail-section">
+          <div class="detail-section-label">Severity</div>
+          <span class="severity-badge s3">● Significant</span>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-label">Confidence</div>
+          <div class="confidence-row">
+            <div class="confidence-bar"><div class="confidence-fill"></div></div>
+            <div class="confidence-label">87%</div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-label">Issue</div>
+          <p style="font-size:13px;line-height:1.55;">Toilet placement in SW quadrant disturbs the stability and grounding energy of the household. Affects family roots and senior member wellbeing.</p>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-label">Principles Applied · 4</div>
+          <span class="principle-tag">Pancha-Bhuta</span>
+          <span class="principle-tag">Nairutya-Dosha</span>
+          <span class="principle-tag">Earth-element</span>
+          <span class="principle-tag">Ayurvastu</span>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-label">Remedies · Priority Order</div>
+
+          <div class="remedy-card">
+            <div class="remedy-card-header">
+              <span class="remedy-title">Vastu Salt Bowl</span>
+              <span class="remedy-cost">AED 50–80</span>
+            </div>
+            <p class="remedy-desc">Place Himalayan salt bowl in SW corner, refresh weekly.</p>
+            <button class="remedy-cta">+ Add to plan</button>
+          </div>
+
+          <div class="remedy-card">
+            <div class="remedy-card-header">
+              <span class="remedy-title">Heavy Earth-Tone Decor</span>
+              <span class="remedy-cost">AED 300–800</span>
+            </div>
+            <p class="remedy-desc">Add weighted stone, ceramic, or terracotta pieces to anchor zone.</p>
+            <button class="remedy-cta">+ Add to plan</button>
+          </div>
+
+          <div class="remedy-card">
+            <div class="remedy-card-header">
+              <span class="remedy-title">Color Therapy Repaint</span>
+              <span class="remedy-cost">AED 1,200–2,500</span>
+            </div>
+            <p class="remedy-desc">Repaint walls in earthy ochre or terracotta for full remediation.</p>
+            <button class="remedy-cta">+ Add to plan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SCREEN 4: BRANDING ===== -->
+<section class="screen" id="screen-branding">
+  <div class="branding-container">
+    <h1 class="branding-title">Branding Settings <span class="tier-pill">★ Consultant Tier</span></h1>
+    <p class="branding-subtitle">White-label every PDF report with your agency branding.</p>
+
+    <div class="branding-grid">
+      <div class="branding-form-card">
+        <div class="detail-section-label" style="margin-bottom:10px;">Logo</div>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:24px;">
+          <div style="width:64px;height:64px;background:var(--color-bg-elevated);border:1px dashed var(--color-border-strong);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:11px;">LOGO</div>
+          <button class="btn-secondary" style="font-size:12px;padding:8px 14px;">Upload PNG / SVG</button>
+        </div>
+
+        <div class="detail-section-label" style="margin-bottom:10px;">Accent Color</div>
+        <div class="color-swatches" style="margin-bottom:24px;">
+          <div class="swatch selected" style="background:#D4A857;"></div>
+          <div class="swatch" style="background:#1E40AF;"></div>
+          <div class="swatch" style="background:#059669;"></div>
+          <div class="swatch" style="background:#9333EA;"></div>
+          <div class="swatch" style="background:#DC2626;"></div>
+          <div class="swatch" style="background:#0891B2;"></div>
+        </div>
+
+        <div class="detail-section-label" style="margin-bottom:10px;">Typography</div>
+        <div class="tradition-row" style="margin-bottom:24px;">
+          <div class="tradition-pill active">Modern</div>
+          <div class="tradition-pill">Classical</div>
+          <div class="tradition-pill">Editorial</div>
+          <div class="tradition-pill">Monospace</div>
+        </div>
+
+        <div class="detail-section-label" style="margin-bottom:10px;">Header Text</div>
+        <input class="form-input" placeholder="e.g. Falcon Realty · Vastu Audit" style="margin-bottom:24px;" />
+
+        <div class="detail-section-label" style="margin-bottom:10px;">Language</div>
+        <div class="tradition-row" style="margin-bottom:24px;">
+          <div class="tradition-pill active">EN</div>
+          <div class="tradition-pill">हिंदी</div>
+          <div class="tradition-pill">العربية</div>
+          <div class="tradition-pill">Auto</div>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div style="font-weight:500;font-size:13px;">PDF Watermark</div>
+            <div style="color:var(--color-text-muted);font-size:11px;">Subtle "Powered by" footer</div>
+          </div>
+          <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div style="font-weight:500;font-size:13px;">Digital Signature</div>
+            <div style="color:var(--color-text-muted);font-size:11px;">Auto-sign reports with your seal</div>
+          </div>
+          <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+        </div>
+
+        <button class="btn-primary" style="width:100%;margin-top:24px;">Save & Set as Default</button>
+      </div>
+
+      <div class="branding-preview-card">
+        <div class="detail-section-label" style="margin-bottom:6px;">Live Preview</div>
+        <p style="font-size:11px;color:var(--color-text-muted);margin-bottom:0;">How your report cover will look</p>
+
+        <div class="preview-pdf">
+          <div class="preview-pdf-header">
+            <div class="preview-pdf-logo">
+              <div class="lg"></div>
+              <div>FALCON REALTY</div>
+            </div>
+            <div class="preview-pdf-meta">02 May 2026<br/>Audit #VA-72482</div>
+          </div>
+          <h2 class="preview-pdf-title">Vastu Audit Report</h2>
+          <p style="font-size:11px;color:#666;margin-bottom:12px;">Property: 4-BR Villa · DAMAC Lagoons · Dubai</p>
+
+          <div style="background:#FAF6EE;border-left:3px solid #D4A857;padding:10px 14px;margin:14px 0;border-radius:0 4px 4px 0;">
+            <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.05em;">Overall Score</div>
+            <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:#1a1a1a;">72/100 · Auspicious</div>
+          </div>
+
+          <div class="preview-pdf-row"><span>North-East — Ishana</span><span style="color:#4ADE80;">● Mild</span></div>
+          <div class="preview-pdf-row"><span>South-East — Agni</span><span style="color:#FACC15;">● Moderate</span></div>
+          <div class="preview-pdf-row"><span>South-West — Nairutya</span><span style="color:#EF4444;">● Severe</span></div>
+          <div class="preview-pdf-row"><span>Brahmasthan — Center</span><span style="color:#FB923C;">● Significant</span></div>
+
+          <div style="text-align:center;font-size:9px;color:#aaa;margin-top:24px;border-top:1px solid #eee;padding-top:8px;">
+            Report by Falcon Realty · Powered by Qadr AI Agency Dubai
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  VastuAudit.ai prototype · Design system v1.0 · Powered by <span class="gold">Qadr AI Agency Dubai</span>
+</footer>
+
+<script>
+  // Screen navigation
+  document.querySelectorAll('.screen-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchScreen(tab.dataset.screen));
+  });
+  function switchScreen(name) {
+    document.querySelectorAll('.screen-tab').forEach(t => t.classList.toggle('active', t.dataset.screen === name));
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  // Build heatmap (9x9 with realistic severity distribution)
+  const heatmap = document.getElementById('heatmap');
+  // Severity map - SW corner is severe, center is significant, NE auspicious, etc.
+  const sevMap = [
+    [1,1,1,1,2,2,2,2,2], // N row
+    [1,1,1,1,2,2,2,2,2],
+    [1,1,1,1,1,2,2,2,2],
+    [1,1,1,3,3,3,2,2,2],
+    [2,2,1,3,4,3,3,2,2], // Center row (Brahmasthan)
+    [2,2,2,3,3,3,3,3,3],
+    [3,3,3,3,3,3,4,4,4],
+    [3,3,3,3,3,4,4,4,4], // SW area
+    [3,3,3,3,3,4,4,4,4]  // S row
+  ];
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell s' + sevMap[r][c];
+      if (r === 4 && c === 4) cell.className += ' brahma';
+      if (r === 7 && c === 6) cell.className += ' selected'; // SW selected
+      heatmap.appendChild(cell);
+    }
+  }
+
+  // Animated terminal log on processing screen entry
+  let termAnimated = false;
+  const termObserver = new MutationObserver(() => {
+    if (document.getElementById('screen-processing').classList.contains('active') && !termAnimated) {
+      termAnimated = true;
+      const reasoning = document.querySelector('.reasoning-stream');
+      const messages = [
+        'South-east quadrant aligned with Agni element — kitchen placement is optimal.',
+        'Analyzing south-west quadrant — detecting toilet placement issue...',
+        'Cross-referencing 47-dosha catalogue for SW Nairutya zone...',
+        'Generating cost-tiered remedies (AED 50–2,500 range)...'
+      ];
+      let i = 0;
+      const cycle = () => {
+        reasoning.textContent = messages[i];
+        i = (i + 1) % messages.length;
+        setTimeout(cycle, 2400);
+      };
+      setTimeout(cycle, 1000);
+    }
+  });
+  termObserver.observe(document.getElementById('screen-processing'), { attributes: true, attributeFilter: ['class'] });
+</script>
+
+</body>
+</html>
