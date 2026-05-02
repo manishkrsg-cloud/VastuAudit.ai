@@ -1,0 +1,24 @@
+{
+  "name": "vastuaudit-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VastuAudit.ai — AI-powered Vastu audits. A Qadr AI Agency Dubai product.",
+  "author": "Manish Kumar <manishkr.sg@gmail.com>",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "type-check": "turbo run type-check",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3"
+  }
+}

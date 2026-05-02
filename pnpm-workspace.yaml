@@ -1,3 +1,8 @@
 packages:
-  - "apps/web"
+  - "apps/*"
   - "packages/*"
+
+# Avoid post-install build prompts for trusted native deps used by Next.js.
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
