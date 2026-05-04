@@ -5,8 +5,8 @@ Run locally with::
     uv run uvicorn src.main:app --reload --port 8000
 """
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,7 +32,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     )
     try:
         await get_redis().ping()
-    except Exception as exc:  # noqa: BLE001 - surface but don't crash
+    except Exception as exc:
         log.warning("redis.ping.failed", err=str(exc))
     yield
     log.info("api.shutdown")

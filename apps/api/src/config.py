@@ -23,9 +23,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     # ----- data layer ----------------------------------------------------
-    database_url: str = (
-        "postgresql+asyncpg://vastuaudit:vastuaudit@localhost:5432/vastuaudit"
-    )
+    database_url: str = "postgresql+asyncpg://vastuaudit:vastuaudit@localhost:5432/vastuaudit"
     redis_url: str = "redis://localhost:6379/0"
 
     # ----- AI ------------------------------------------------------------
@@ -56,9 +54,7 @@ class Settings(BaseSettings):
     resend_from_email: str = "hello@vastuaudit.ai"
 
     # ----- web / CORS ----------------------------------------------------
-    cors_origins: str = (
-        "http://localhost:3000,https://vastuaudit.ai,https://www.vastuaudit.ai"
-    )
+    cors_origins: str = "http://localhost:3000,https://vastuaudit.ai,https://www.vastuaudit.ai"
 
     # ----- observability -------------------------------------------------
     sentry_dsn: str = ""

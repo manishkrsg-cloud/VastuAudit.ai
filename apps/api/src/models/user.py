@@ -26,9 +26,7 @@ class User(Base, TimestampMixin):
     )
 
     # Clerk identity
-    clerk_id: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False, index=True
-    )
+    clerk_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     email: Mapped[str] = mapped_column(String(320), nullable=False, index=True)
     first_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     last_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
@@ -40,23 +38,17 @@ class User(Base, TimestampMixin):
         default="free",
         server_default="free",
     )  # free | pro | consultant | enterprise
-    stripe_customer_id: Mapped[str | None] = mapped_column(
-        String(255), nullable=True, unique=True
-    )
+    stripe_customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
 
     # Soft-delete (Clerk user.deleted)
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    audits: Mapped[list["Audit"]] = relationship(
+    audits: Mapped[list[Audit]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )
 
-    __table_args__ = (
-        Index("ix_users_subscription_tier", "subscription_tier"),
-    )
+    __table_args__ = (Index("ix_users_subscription_tier", "subscription_tier"),)
 
     def __repr__(self) -> str:
         return f"<User {self.email!r} ({self.subscription_tier})>"

@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from src.models.user import User
 
 
-class AuditStatus(str, enum.Enum):
+class AuditStatus(enum.StrEnum):
     QUEUED = "queued"
     ANALYZING = "analyzing"
     READY = "ready"
@@ -39,9 +39,7 @@ class Audit(Base, TimestampMixin):
         index=True,
     )
 
-    title: Mapped[str] = mapped_column(
-        String(255), nullable=False, default="Untitled audit"
-    )
+    title: Mapped[str] = mapped_column(String(255), nullable=False, default="Untitled audit")
     status: Mapped[AuditStatus] = mapped_column(
         SAEnum(
             AuditStatus,
@@ -65,7 +63,7 @@ class Audit(Base, TimestampMixin):
     remedies: Mapped[list[Any] | None] = mapped_column(JSONB, nullable=True)
     report_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
 
-    user: Mapped["User"] = relationship(back_populates="audits")
+    user: Mapped[User] = relationship(back_populates="audits")
 
     def __repr__(self) -> str:
         return f"<Audit id={self.id} status={self.status.value} score={self.score}>"

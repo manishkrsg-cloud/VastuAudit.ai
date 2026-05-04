@@ -28,11 +28,11 @@ async def readiness(db: DbSession) -> dict[str, bool | str]:
     try:
         result = await db.execute(text("SELECT 1"))
         db_ok = result.scalar_one() == 1
-    except Exception:  # noqa: BLE001
+    except Exception:
         db_ok = False
     try:
         redis_ok = bool(await get_redis().ping())
-    except Exception:  # noqa: BLE001
+    except Exception:
         redis_ok = False
 
     payload: dict[str, bool | str] = {

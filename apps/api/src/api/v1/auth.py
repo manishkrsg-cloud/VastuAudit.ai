@@ -76,9 +76,7 @@ async def _upsert_user(db: AsyncSession, data: dict[str, Any]) -> None:
             break
         email = email or addr
 
-    user = (
-        await db.execute(select(User).where(User.clerk_id == clerk_id))
-    ).scalar_one_or_none()
+    user = (await db.execute(select(User).where(User.clerk_id == clerk_id))).scalar_one_or_none()
 
     if user is None:
         user = User(
@@ -103,9 +101,7 @@ async def _soft_delete_user(db: AsyncSession, data: dict[str, Any]) -> None:
     clerk_id = data.get("id")
     if not clerk_id:
         return
-    user = (
-        await db.execute(select(User).where(User.clerk_id == clerk_id))
-    ).scalar_one_or_none()
+    user = (await db.execute(select(User).where(User.clerk_id == clerk_id))).scalar_one_or_none()
     if user is not None:
         user.deleted_at = datetime.now(UTC)
         log.info("user.deleted", clerk_id=clerk_id)
