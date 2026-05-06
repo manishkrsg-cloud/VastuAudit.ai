@@ -13,7 +13,7 @@ htmlcov
 .env
 .env.*
 !.env.example
-README.md
 tests/
 docs/
 *.md
+!README.md
