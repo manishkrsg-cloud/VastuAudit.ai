@@ -32,16 +32,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Install deps first (cached)
+# Install deps first (Docker layer caching only; BuildKit cache mounts
+# disabled because Railway's builder rejects them without a Railway-
+# specific cacheKey prefix on the id).
 COPY pyproject.toml uv.lock* ./
-RUN --mount=type=cache,id=uv,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev || \
+RUN uv sync --frozen --no-install-project --no-dev || \
     uv sync --no-install-project --no-dev
 
 # Then copy source and install the project itself
 COPY . .
-RUN --mount=type=cache,id=uv,target=/root/.cache/uv \
-    uv sync --frozen --no-dev || uv sync --no-dev
+RUN uv sync --frozen --no-dev || uv sync --no-dev
 
 
 # ----- runtime ------------------------------------------------------------
