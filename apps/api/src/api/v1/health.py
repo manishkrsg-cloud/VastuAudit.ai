@@ -10,7 +10,7 @@ from src.redis_client import get_redis
 router = APIRouter()
 
 
-@router.get("/health", summary="Liveness probe")
+@router.get("/health", summary="Liveness probe (with diagnostics)")
 async def health() -> dict[str, str]:
     return {
         "status": "ok",
@@ -19,6 +19,11 @@ async def health() -> dict[str, str]:
         "env": settings.app_env,
         "version": "0.1.0",
     }
+
+
+@router.get("/health/live", summary="Minimal liveness probe (Railway healthcheck)")
+async def live() -> dict[str, str]:
+    return {"status": "live"}
 
 
 @router.get("/health/ready", summary="Readiness probe (DB + Redis)")
@@ -31,7 +36,7 @@ async def readiness(db: DbSession) -> dict[str, bool | str]:
     except Exception:
         db_ok = False
     try:
-        redis_ok = bool(await get_redis().ping())
+        redis_ok = bool(await get_redis().ping())  # type: ignore[misc]
     except Exception:
         redis_ok = False
 

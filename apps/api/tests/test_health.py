@@ -22,3 +22,11 @@ def test_health_liveness() -> None:
     assert body["status"] == "ok"
     assert body["app"] == "VastuAudit.ai"
     assert body["owner"] == "Qadr AI Agency Dubai"
+
+
+def test_health_live_minimal() -> None:
+    """Minimal liveness probe used by Railway healthcheck — must not touch DB or Redis."""
+    with TestClient(app) as client:
+        response = client.get("/api/v1/health/live")
+    assert response.status_code == 200
+    assert response.json() == {"status": "live"}
