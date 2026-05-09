@@ -8,6 +8,7 @@ Run locally with::
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -16,6 +17,14 @@ from src.config import settings
 from src.database import dispose_engine
 from src.redis_client import close_redis, get_redis
 from src.utils.logging import configure_logging, get_logger
+
+# Sentry init — no-op if SENTRY_DSN is unset, so safe to leave wired in dev.
+if settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        traces_sample_rate=0.1,
+        environment=settings.app_env,
+    )
 
 configure_logging(settings.log_level)
 log = get_logger(__name__)
