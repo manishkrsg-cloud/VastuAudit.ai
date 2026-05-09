@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  api:
+    name: api (ruff + mypy + alembic + pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: vastuaudit
+          POSTGRES_PASSWORD: vastuaudit
+          POSTGRES_DB: vastuaudit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql+asyncpg://vastuaudit:vastuaudit@localhost:5432/vastuaudit
+      REDIS_URL: redis://localhost:6379/0
+      APP_ENV: development
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --dev
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Ruff format check
+        run: uv run ruff format --check .
+      - name: Mypy
+        run: uv run mypy src
+      - name: Alembic check (drift detection)
+        run: uv run alembic check
+      - name: Pytest
+        run: uv run pytest -q
+
+  web:
+    name: web (typecheck + lint + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+      - name: Typecheck
+        run: pnpm type-check
+      - name: Lint
+        run: pnpm lint
+      - name: Build
+        run: pnpm build
